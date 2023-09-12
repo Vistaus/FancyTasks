@@ -14,10 +14,14 @@ Kirigami.FormLayout {
 
     property alias cfg_indicatorsEnabled: indicatorsEnabled.currentIndex
     property alias cfg_groupIconEnabled: groupIconEnabled.currentIndex
+    property alias cfg_indicatorProgress: indicatorProgress.checked 
+    property alias cfg_indicatorProgressColor: indicatorProgressColor.color
+    property alias cfg_disableInactiveIndicators: disableInactiveIndicators.checked
     property alias cfg_indicatorsAnimated: indicatorsAnimated.checked
     property alias cfg_indicatorLocation: indicatorLocation.currentIndex
     property alias cfg_indicatorReverse: indicatorReverse.checked
     property alias cfg_indicatorOverride: indicatorOverride.checked
+    property alias cfg_indicatorEdgeOffset: indicatorEdgeOffset.value
     property alias cfg_indicatorStyle: indicatorStyle.currentIndex
     property alias cfg_indicatorMinLimit: indicatorMinLimit.value
     property alias cfg_indicatorMaxLimit: indicatorMaxLimit.value
@@ -36,6 +40,28 @@ Kirigami.FormLayout {
         id: indicatorsEnabled
         Kirigami.FormData.label: i18n("Indicators:")
         model: [i18n("Disabled"), i18n("Enabled")]
+    }
+
+    CheckBox {
+        id: indicatorProgress
+        enabled: indicatorsEnabled.currentIndex
+        visible: indicatorsEnabled.currentIndex
+        text: i18n("Display Progress on Indicator")
+    }
+
+    KQControls.ColorButton {
+        enabled: indicatorsEnabled.currentIndex
+        visible: indicatorProgress.checked
+        id: indicatorProgressColor
+        Kirigami.FormData.label: i18n("Progress Color:")
+        showAlphaChannel: true
+    }
+
+    CheckBox {
+        enabled: indicatorsEnabled.currentIndex
+        visible: indicatorsEnabled.currentIndex
+        id: disableInactiveIndicators
+        text: i18n("Disable for Inactive Windows")
     }
 
     ComboBox {
@@ -77,11 +103,6 @@ Kirigami.FormLayout {
         text: i18n("Override location")
     }
 
-    Label {
-        text: i18n("Be sure to use this when using as a floating widget")
-        font: Kirigami.Theme.smallFont
-    }
-
     ComboBox {
         enabled: indicatorsEnabled.currentIndex
         visible: indicatorOverride.checked
@@ -92,6 +113,19 @@ Kirigami.FormLayout {
             i18n("Right"),
             i18n("Top")
         ]
+    }
+
+    Label {
+        text: i18n("Be sure to use this when using as a floating widget")
+        font: Kirigami.Theme.smallFont
+    }
+
+    SpinBox {
+        enabled: indicatorsEnabled.currentIndex
+        id: indicatorEdgeOffset
+        Kirigami.FormData.label: i18n("Indicator Edge Offset (px):")
+        from: 0
+        to: 999
     }
 
     Item {

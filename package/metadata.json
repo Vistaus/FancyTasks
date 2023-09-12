@@ -3,11 +3,11 @@
         "Authors": [
             {
                 "Email": "Hein@kde.org, ideas@alexankitty.com",
-                "Name": "Eike Hein, Alexandra Stone, Alexandra Stone",
-                "Name[ar]": "Eike Hein, Alexandra Stone, Alexandra Stone",
-                "Name[az]": "Eike Hein, Alexandra Stone, Alexandra Stone",
-                "Name[bg]": "Eike Hein, Alexandra Stone, Alexandra Stone",
-                "Name[ca@valencia]": "Eike Hein, Alexandra Stone, Alexandra Stone",
+                "Name": "Eike Hein, Alexandra Stone",
+                "Name[ar]": "Eike Hein, Alexandra Stone",
+                "Name[az]": "Eike Hein, Alexandra Stone",
+                "Name[bg]": "Eike Hein, Alexandra Stone",
+                "Name[ca@valencia]": "Eike Hein, Alexandra Stone",
                 "Name[ca]": "Eike Hein, Alexandra Stone",
                 "Name[cs]": "Eike Hein, Alexandra Stone",
                 "Name[da]": "Eike Hein, Alexandra Stone",
@@ -45,7 +45,7 @@
             }
         ],
         "Category": "Windows and Tasks",
-        "Description": "More modern style taskbar-style window switcher displaying icons and text, with some improvments",
+        "Description": "More modern taskbar-style window switcher displaying icons and text, with some improvments and customization options.",
         "Description[ar]": "مبدل نوافذ تقليدي بنمط شريط المهام يعرض الأيقونات والنص",
         "Description[az]": "Nişanlar və mətn göstərən klassik tapşırıq paneli üslubunda pəncərə dəyişdirici",
         "Description[bg]": "Класически превключвател на прозорци в стил лента на задачите, показващ икони и текст",
@@ -80,7 +80,8 @@
         "Description[x-test]": "xxClassic taskbar-style window switcher displaying icons and textxx",
         "Description[zh_CN]": "经典风格的同时显示图标和文本的任务栏式窗口切换器",
         "EnabledByDefault": true,
-        "Icon": "FancyTasks",
+        "Icon": "FancyTasks.png",
+        
         "Id": "alexankitty.fancytasks",
         "License": "GPL-2.0+",
         "Name": "Fancy Tasks",
@@ -171,7 +172,7 @@
             "Plasma/Applet"
         ],
         "Version": "4.0",
-        "Website": "https://userbase.kde.org/Plasma/Tasks"
+        "Website": "https://github.com/alexankitty/FancyTasks"
     },
     "X-Plasma-API": "declarativeappletscript",
     "X-Plasma-MainScript": "ui/main.qml",

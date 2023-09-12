@@ -25,10 +25,10 @@ Item {
         clip: true
 
         PlasmaCore.FrameSvgItem {
+            enabledBorders: plasmoid.configuration.useBorders ? 1 | 2 | 4 | 8 : 0
             id: progressFrame
             width: background.width
             height: background.height
-
             imagePath: "widgets/tasks"
             prefix: TaskTools.taskPrefix("progress").concat(TaskTools.taskPrefix("hover"))
         }

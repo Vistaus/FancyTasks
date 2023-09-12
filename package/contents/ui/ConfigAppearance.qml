@@ -25,9 +25,10 @@ Kirigami.FormLayout {
     property alias cfg_showToolTips: showToolTips.checked
     property alias cfg_highlightWindows: highlightWindows.checked
     property bool cfg_indicateAudioStreams
+    property alias cfg_iconScale: iconScale.value
     property alias cfg_maxStripes: maxStripes.value
     property bool cfg_forceStripes
-    property alias cfg_maxLength: maxLength.value
+    property alias cfg_maxButtonLength: maxButtonLength.value
     property int cfg_iconSpacing: 0
 
     property alias cfg_useBorders: useBorders.checked
@@ -39,6 +40,7 @@ Kirigami.FormLayout {
     property alias cfg_buttonColorizeCustom: buttonColorizeCustom.color
 
     property alias cfg_disableButtonSvg: disableButtonSvg.checked
+    property alias cfg_disableButtonInactiveSvg: disableButtonInactiveSvg.checked
     property alias cfg_overridePlasmaButtonDirection: overridePlasmaButtonDirection.checked
     property alias cfg_plasmaButtonDirection: plasmaButtonDirection.currentIndex
 
@@ -70,6 +72,18 @@ Kirigami.FormLayout {
     CheckBox {
         id: useBorders
         text: i18n("Use plasma borders")
+    }
+
+    Item {
+        Kirigami.FormData.isSection: true
+    }
+
+    Slider {
+        id: iconScale
+        from: 0
+        to: 300
+        stepSize: 25.0
+        Kirigami.FormData.label: i18n("Icon Scale") + " " + iconScale.valueAt(iconScale.position) + "%"
     }
 
     Item {
@@ -116,6 +130,7 @@ Kirigami.FormLayout {
         id: buttonColorizeInactive
         text: i18n("Colorize inactive buttons")
         visible: buttonColorize.checked
+        enabled: !disableButtonInactiveSvg.checked
     }
 
     Item {
@@ -125,7 +140,12 @@ Kirigami.FormLayout {
     CheckBox {
         id: disableButtonSvg
         Kirigami.FormData.label: i18n("Plasma Button Decorations:")
-        text: i18n("Disable")
+        text: i18n("Disable All")
+    }
+    CheckBox {
+        id: disableButtonInactiveSvg
+        text: i18n("Disable Inactive Buttons")
+        enabled: !disableButtonSvg.checked
     }
 
     CheckBox {
@@ -142,7 +162,6 @@ Kirigami.FormLayout {
     ComboBox {
         id: plasmaButtonDirection
         visible: overridePlasmaButtonDirection.checked
-        //Kirigami.FormData.label: i18n("Indicator Location:")
         model: [
             i18n("North"),
             i18n("South"),
@@ -171,7 +190,7 @@ Kirigami.FormLayout {
 
     SpinBox {
         visible: !plasmoidVertical && !iconOnly
-        id: maxLength
+        id: maxButtonLength
         Kirigami.FormData.label: i18n("Maximum button length (px):")
         from: 1
         to: 9999
@@ -182,10 +201,6 @@ Kirigami.FormLayout {
         Kirigami.FormData.label: i18n("Space between taskbar items (px):")
         from: 0
         to: 99
-    }
-    Label {
-        text: i18n("Press OK to fix layout issues.")
-        font: Kirigami.Theme.smallFont
     }
 
     Item {

@@ -74,6 +74,10 @@ MouseArea {
         || (task.contextMenu && task.contextMenu.status === PlasmaComponents.DialogStatus.Open)
         || (!!tasks.groupDialog && tasks.groupDialog.visualParent === task)
 
+    property string tintColor: Kirigami.ColorUtils.brightnessForColor(PlasmaCore.Theme.backgroundColor) ===
+                                Kirigami.ColorUtils.Dark ?
+                                "#ffffff" : "#000000"
+
     Accessible.name: model.display
     Accessible.description: model.display ? i18n("Activate %1", model.display) : ""
     Accessible.role: Accessible.Button
@@ -364,6 +368,7 @@ MouseArea {
             source: model.decoration
         }
         property color dominantColor: imageColors.dominant
+        property color indicatorColor: Kirigami.ColorUtils.tintWithAlpha(frame.dominantColor, tintColor, .38)
         anchors {
             fill: parent
 
@@ -372,7 +377,6 @@ MouseArea {
             leftMargin: ((inPopup || tasks.vertical) && taskList.columns > 1) ? LayoutManager.iconMargin : 0
             rightMargin: ((inPopup || tasks.vertical) && taskList.columns > 1) ? LayoutManager.iconMargin : 0           
         }
-
         imagePath: plasmoid.configuration.disableButtonSvg ? "" : "widgets/tasks"
         enabledBorders: plasmoid.configuration.useBorders ? 1 | 2 | 4 | 8 : 0
         property bool isHovered: task.highlighted && plasmoid.configuration.taskHoverEffect
@@ -385,14 +389,18 @@ MouseArea {
         id: colorOverride
         anchors.fill: frame
         source: frame
-        color: plasmoid.configuration.buttonColorizeDominant ? frame.dominantColor : plasmoid.configuration.buttonColorizeCustom
+        color: plasmoid.configuration.buttonColorizeDominant ?
+                frame.indicatorColor :
+                plasmoid.configuration.buttonColorizeCustom
         visible: plasmoid.configuration.buttonColorize ? true : false
     }
 
     Flow {
         id: indicator
+        visible: plasmoid.configuration.indicatorsEnabled ? true : false
         flow: Flow.LeftToRight
         spacing: PlasmaCore.Units.smallSpacing
+        clip: true
         Repeater {
 
             model: {
@@ -401,12 +409,8 @@ MouseArea {
                 return 0;
                 if(task.childCount < plasmoid.configuration.indicatorMinLimit)
                 return 0;
-                if(task.parent.toString().includes('QQuickItem'))//Target only the main task items.
+                if(task.isSubTask)//Target only the main task items.
                 return 0;
-                /*for(var key in task) {
-                    console.log(key)
-                    console.log(task[key])
-                }*/ //Kept for debugging
                 if(task.state === 'launcher') {
                     return 0;
                 }
@@ -420,7 +424,7 @@ MouseArea {
                 Behavior on width { PropertyAnimation {duration: plasmoid.configuration.indicatorsAnimated ? 250 : 0} }
                 Behavior on color { PropertyAnimation {duration: plasmoid.configuration.indicatorsAnimated ? 250 : 0} }
                 Behavior on radius { PropertyAnimation {duration: plasmoid.configuration.indicatorsAnimated ? 250 : 0} }
-                readonly property color decoColor: frame.dominantColor
+                readonly property color decoColor: frame.indicatorColor
                 readonly property int maxStates: plasmoid.configuration.indicatorMaxLimit
                 readonly property bool isFirst: index === 0
                 readonly property int adjust: plasmoid.configuration.indicatorShrink
@@ -429,10 +433,10 @@ MouseArea {
                 readonly property bool isVertical: {
                     if(plasmoid.formFactor === PlasmaCore.Types.Vertical && !plasmoid.configuration.indicatorOverride)
                     return true;
-                    if(plasmoid.formFactor == PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 1 || plasmoid.configuration.indicatorLocation === 2)
+                    if(plasmoid.formFactor == PlasmaCore.Types.Floating && plasmoid.configuration.indicatorOverride && (plasmoid.configuration.indicatorLocation === 1 || plasmoid.configuration.indicatorLocation === 2))
                     return  true;
-                    if(plasmoid.configuration.indicatorLocation === 1 || plasmoid.configuration.indicatorLocation === 2)
-                    return true;
+                    if(plasmoid.configuration.indicatorOverride && (plasmoid.configuration.indicatorLocation === 1 || plasmoid.configuration.indicatorLocation === 2))
+                    return  true;
                     else{
                         return false;
                     }
@@ -488,11 +492,11 @@ MouseArea {
                         width = plasmoid.configuration.indicatorSize
                         height = indicatorComputedSize
                     }
-                    if(plasmoid.configuration.indicatorDesaturate && task.state === "minimized") {
+                    if(plasmoid.configuration.indicatorDesaturate && task.state === "minimizedNormal") {
                         var colorHSL = hexToHSL(colorEval)
-                        colorCalc = Qt.hsla(colorHSL.h, 0.2, colorHSL.l, 1)
+                        colorCalc = Qt.hsla(colorHSL.h, colorHSL.s*0.5, colorHSL.l*.8, 1)
                     }
-                    else if(!isFirst && plasmoid.configuration.indicatorStyle ===  0 && task.state !== "minimized") {//Metro specific handling
+                    else if(!isFirst && plasmoid.configuration.indicatorStyle ===  0 && task.state !== "minimizedNormal") {//Metro specific handling
                         colorCalc = Qt.darker(colorEval, 1.2) 
                     }
                     else {
@@ -504,100 +508,54 @@ MouseArea {
                 height: computedVar.height
                 color: computedVar.colorCalc
                 radius: (Math.max(width, height) / Math.min(width,  height)) * (plasmoid.configuration.indicatorRadius / 100)
+                Rectangle{
+                    Behavior on height { PropertyAnimation {duration: plasmoid.configuration.indicatorsAnimated ? 250 : 0} }
+                    Behavior on width { PropertyAnimation {duration: plasmoid.configuration.indicatorsAnimated ? 250 : 0} }
+                    Behavior on color { PropertyAnimation {duration: plasmoid.configuration.indicatorsAnimated ? 250 : 0} }
+                    Behavior on radius { PropertyAnimation {duration: plasmoid.configuration.indicatorsAnimated ? 250 : 0} }
+                    visible:  task.isWindow && task.smartLauncherItem && task.smartLauncherItem.progressVisible && isFirst && plasmoid.configuration.indicatorProgress
+                    anchors{
+                        top: isVertical ? undefined : parent.top
+                        bottom: isVertical ? undefined : parent.bottom
+                        left: isVertical ? parent.left : undefined
+                        right: isVertical ? parent.right : undefined
+                    }
+                    readonly property var progress: {
+                        if(task.smartLauncherItem && task.smartLauncherItem.progressVisible && task.smartLauncherItem.progress){
+                            return task.smartLauncherItem.progress / 100
+                        }
+                        return 0
+                    }
+                    width: isVertical ? parent.width : parent.width * progress
+                    height: isVertical ? parent.height * progress : parent.height
+                    radius: parent.radius
+                    color: plasmoid.configuration.indicatorProgressColor
+                }
             }   
         }
         
         states:[
-            State {//safety case - use bottom when not override
-                name: "floating-fallback"
-                when: (plasmoid.location === PlasmaCore.Types.Floating && !plasmoid.configuration.indicatorOverride)
-
-                AnchorChanges {
-                    target: indicator
-                    anchors{ top:undefined; bottom:parent.bottom; left:undefined; right:undefined;
-                        horizontalCenter:parent.horizontalCenter; verticalCenter:undefined}
-                }
-                PropertyChanges {
-                    target: indicator
-                    width: undefined
-                    height: plasmoid.configuration.indicatorSize
-                }
-            },
-            State {
-                name: "floating-bottom"
-                when: (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 0)
-
-                AnchorChanges {
-                    target: indicator
-                    anchors{ top:undefined; bottom:parent.bottom; left:undefined; right:undefined;
-                        horizontalCenter:parent.horizontalCenter; verticalCenter:undefined}
-                }
-                PropertyChanges {
-                    target: indicator
-                    width: undefined
-                    height: plasmoid.configuration.indicatorSize
-                }
-            },
-            State {
-                name: "floating-left"
-                when: (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 0)
-
-                AnchorChanges {
-                    target: indicator
-                    anchors{ top:undefined; bottom:undefined; left:parent.left; right:undefined;
-                        horizontalCenter:undefined; verticalCenter:parent.verticalCenter}
-                }
-                PropertyChanges {
-                    target: indicator
-                    height: undefined
-                    width: plasmoid.configuration.indicatorSize
-                }
-            },
-            State {
-                name: "floating-right"
-                when: (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 0)
-
-                AnchorChanges {
-                    target: indicator
-                    anchors{ top:undefined; bottom:undefined; left:undefined; right:parent.right;
-                        horizontalCenter:undefined; verticalCenter:parent.verticalCenter}
-                }
-                PropertyChanges {
-                    target: indicator
-                    height: undefined
-                    width: plasmoid.configuration.indicatorSize
-                }
-            },
-            State {
-                name: "floating-top"
-                when: (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 0)
-
-                AnchorChanges {
-                    target: indicator
-                    anchors{ top:parent.top; bottom:undefined; left:undefined; right:undefined;
-                        horizontalCenter:parent.horizontalCenter; verticalCenter:undefined}
-                }
-                PropertyChanges {
-                    target: indicator
-                    width: undefined
-                    height: plasmoid.configuration.indicatorSize
-                }
-            },
             State {
                 name: "bottom"
                 when: (plasmoid.configuration.indicatorOverride && plasmoid.configuration.indicatorLocation === 0)
                     || (!plasmoid.configuration.indicatorOverride && plasmoid.location === PlasmaCore.Types.BottomEdge && !plasmoid.configuration.indicatorReverse)
                     || (!plasmoid.configuration.indicatorOverride && plasmoid.location === PlasmaCore.Types.TopEdge && plasmoid.configuration.indicatorReverse)
+                    || (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 0)
+                    || (plasmoid.location === PlasmaCore.Types.Floating && !plasmoid.configuration.indicatorOverride && !plasmoid.configuration.indicatorReverse)
 
                 AnchorChanges {
                     target: indicator
                     anchors{ top:undefined; bottom:parent.bottom; left:undefined; right:undefined;
                         horizontalCenter:parent.horizontalCenter; verticalCenter:undefined}
-                }
+                    }
                 PropertyChanges {
                     target: indicator
                     width: undefined
                     height: plasmoid.configuration.indicatorSize
+                    anchors.topMargin: 0;
+                    anchors.bottomMargin: plasmoid.configuration.indicatorEdgeOffset;
+                    anchors.leftMargin: 0;
+                    anchors.rightMargin: 0;
                 }
             },
             State {
@@ -605,7 +563,7 @@ MouseArea {
                 when: (plasmoid.configuration.indicatorOverride && plasmoid.configuration.indicatorLocation === 1)
                     || (!plasmoid.configuration.indicatorOverride && plasmoid.location === PlasmaCore.Types.LeftEdge && !plasmoid.configuration.indicatorReverse)
                     || (!plasmoid.configuration.indicatorOverride && plasmoid.location === PlasmaCore.Types.RightEdge && plasmoid.configuration.indicatorReverse)
-
+                    || (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 1 && plasmoid.configuration.indicatorOverride)
 
                 AnchorChanges {
                     target: indicator
@@ -616,6 +574,10 @@ MouseArea {
                     target: indicator
                     height: undefined
                     width: plasmoid.configuration.indicatorSize
+                    anchors.topMargin: 0;
+                    anchors.bottomMargin: 0;
+                    anchors.leftMargin: plasmoid.configuration.indicatorEdgeOffset;
+                    anchors.rightMargin: 0;
                 }
             },
             State {
@@ -623,6 +585,7 @@ MouseArea {
                 when: (plasmoid.configuration.indicatorOverride && plasmoid.configuration.indicatorLocation === 2)
                     || (!plasmoid.configuration.indicatorOverride && plasmoid.location === PlasmaCore.Types.RightEdge && !plasmoid.configuration.indicatorReverse)
                     || (!plasmoid.configuration.indicatorOverride && plasmoid.location === PlasmaCore.Types.LeftEdge && plasmoid.configuration.indicatorReverse)
+                    || (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 2 && plasmoid.configuration.indicatorOverride)
 
                 AnchorChanges {
                     target: indicator
@@ -633,6 +596,10 @@ MouseArea {
                     target: indicator
                     height: undefined
                     width: plasmoid.configuration.indicatorSize
+                    anchors.topMargin: 0;
+                    anchors.bottomMargin: 0;
+                    anchors.leftMargin: 0;
+                    anchors.rightMargin: plasmoid.configuration.indicatorEdgeOffset;
                 }
             },
             State {
@@ -640,6 +607,8 @@ MouseArea {
                 when: (plasmoid.configuration.indicatorOverride && plasmoid.configuration.indicatorLocation === 3)
                     || (!plasmoid.configuration.indicatorOverride && plasmoid.location === PlasmaCore.Types.TopEdge && !plasmoid.configuration.indicatorReverse)
                     || (!plasmoid.configuration.indicatorOverride && plasmoid.location === PlasmaCore.Types.BottomEdge && plasmoid.configuration.indicatorReverse)
+                    || (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorLocation === 3 && plasmoid.configuration.indicatorOverride)
+                    || (plasmoid.location === PlasmaCore.Types.Floating && plasmoid.configuration.indicatorReverse && !plasmoid.configuration.indicatorOverride)
 
                 AnchorChanges {
                     target: indicator
@@ -650,6 +619,10 @@ MouseArea {
                     target: indicator
                     width: undefined
                     height: plasmoid.configuration.indicatorSize
+                    anchors.topMargin: plasmoid.configuration.indicatorEdgeOffset;
+                    anchors.bottomMargin: 0;
+                    anchors.leftMargin: 0;
+                    anchors.rightMargin: 0;
                 }
             }
         ]
@@ -717,7 +690,7 @@ MouseArea {
         anchors.fill: frame
         asynchronous: true
         source: "TaskProgressOverlay.qml"
-        active: task.isWindow && task.smartLauncherItem && task.smartLauncherItem.progressVisible
+        active: task.isWindow && task.smartLauncherItem && task.smartLauncherItem.progressVisible && !plasmoid.configuration.indicatorProgress
     }
 
     Item {
@@ -730,10 +703,9 @@ MouseArea {
             topMargin: adjustMargin(false, parent.height, taskFrame.margins.top)
         }
 
-        width: height
+        width: iconsOnly ? height : height * (plasmoid.configuration.iconScale / 100)
         height: (parent.height - adjustMargin(false, parent.height, taskFrame.margins.top)
             - adjustMargin(false, parent.height, taskFrame.margins.bottom))
-
         function adjustMargin(vert, size, margin) {
             if (!size) {
                 return margin;
@@ -752,12 +724,14 @@ MouseArea {
 
         PlasmaCore.IconItem {
             id: icon
-
-            anchors.fill: parent
-
             active: task.highlighted
+            anchors.centerIn: parent
             enabled: true
             usesPlasmaTheme: false
+            roundToIconSize: false
+
+            width: iconsOnly ? parent.height * (plasmoid.configuration.iconScale / 100) : parent.width
+            height: width
 
             source: model.decoration
         }
@@ -766,8 +740,9 @@ MouseArea {
             // QTBUG anchors.fill in conjunction with the Loader doesn't reliably work on creation:
             // have a window with a badge, move it from one screen to another, the new task item on the
             // other screen will now have a glitched out badge mask.
-            width: parent.width
-            height: parent.height
+            width: icon.paintedWidth
+            height: icon.paintedHeight
+            anchors.centerIn: icon
             asynchronous: true
             source: "TaskBadgeOverlay.qml"
             active: height >= PlasmaCore.Units.iconSizes.small
@@ -823,7 +798,7 @@ MouseArea {
         Binding {
             target: audioStreamIconLoader.item
             property: "dominantIconColor"
-            value: frame.dominantColor
+            value: frame.indicatorColor
         }
 
         anchors {
@@ -887,24 +862,47 @@ MouseArea {
             PropertyChanges {
                 target: frame
                 basePrefix: "attention"
+                visible: (plasmoid.configuration.buttonColorize && !frame.isHovered) || !plasmoid.configuration.buttonColorize
             }
             PropertyChanges { 
                 target: colorOverride
-                visible: plasmoid.configuration.buttonColorize ? frame.isHovered ? true : false : false
+                visible: (plasmoid.configuration.buttonColorize && frame.isHovered)
             }
         },
         State {
-            name: "minimized"
-            when: model.IsMinimized === true && !frame.isHovered
+            name: "minimizedNormal"
+            when: model.IsMinimized === true && !frame.isHovered && !plasmoid.configuration.disableButtonInactiveSvg
 
             PropertyChanges {
                 target: frame
                 basePrefix: "minimized"
-                visible: plasmoid.configuration.buttonColorize && plasmoid.configuration.buttonColorizeInactive ? false : true
+                visible: (plasmoid.configuration.buttonColorize && plasmoid.configuration.buttonColorizeInactive) ? false : true
             }
             PropertyChanges { 
                 target: colorOverride
-                visible: plasmoid.configuration.buttonColorize && plasmoid.configuration.buttonColorizeInactive ? true : false
+                visible: (plasmoid.configuration.buttonColorize && plasmoid.configuration.buttonColorizeInactive) ? true : false
+            }
+            PropertyChanges{
+                target: indicator
+                visible: plasmoid.configuration.disableInactiveIndicators ? false : true
+            }
+        },
+        State {
+            name: "minimizedNodecoration"
+            when: (model.IsMinimized === true && !frame.isHovered) && plasmoid.configuration.disableButtonInactiveSvg
+
+            PropertyChanges {
+                target: frame
+                basePrefix: "minimized"
+                visible: plasmoid.configuration.disableButtonInactiveSvg ? false : true
+            }
+            PropertyChanges { 
+                target: colorOverride
+                visible: plasmoid.configuration.disableButtonInactiveSvg ? false : true
+            }
+            PropertyChanges{
+                target: indicator
+                visible: plasmoid.configuration.disableInactiveIndicators ? false : true
             }
         },
         State {
@@ -919,10 +917,14 @@ MouseArea {
                 target: colorOverride
                 visible: plasmoid.configuration.buttonColorize ? true : false
             }
+            PropertyChanges{
+                target: indicator
+                visible: plasmoid.configuration.indicatorsEnabled ? true : false
+            }
         },
         State {
-            name: "inactive"
-            when: model.IsActive === false && !frame.isHovered
+            name: "inactiveNormal"
+            when: model.IsActive === false && !frame.isHovered && !plasmoid.configuration.disableButtonInactiveSvg
             PropertyChanges { 
                 target: colorOverride
                 visible: plasmoid.configuration.buttonColorize && plasmoid.configuration.buttonColorizeInactive ? true : false
@@ -930,6 +932,26 @@ MouseArea {
             PropertyChanges { 
                 target: frame
                 visible: plasmoid.configuration.buttonColorize && plasmoid.configuration.buttonColorizeInactive ? false : true
+            }
+            PropertyChanges{
+                target: indicator
+                visible: plasmoid.configuration.disableInactiveIndicators ? false : true
+            }
+        },
+        State {
+            name: "inactiveNoDecoration"
+            when: (model.IsActive === false && !frame.isHovered) && plasmoid.configuration.disableButtonInactiveSvg
+            PropertyChanges { 
+                target: colorOverride
+                visible: plasmoid.configuration.disableButtonInactiveSvg ? false : true
+            }
+            PropertyChanges { 
+                target: frame
+                visible: plasmoid.configuration.disableButtonInactiveSvg ? false : true
+            }
+            PropertyChanges{
+                target: indicator
+                visible: plasmoid.configuration.disableInactiveIndicators ? false : true
             }
         },
         State {
@@ -942,6 +964,10 @@ MouseArea {
             PropertyChanges { 
                 target: frame
                 visible: plasmoid.configuration.buttonColorize ? false : true
+            }
+            PropertyChanges{
+                target: indicator
+                visible: plasmoid.configuration.disableInactiveIndicators ? false : true
             }
         }
     ]

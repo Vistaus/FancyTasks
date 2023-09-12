@@ -1,15 +1,19 @@
 # Notice
-I'm not using Linux enough to actively work on this project. If someone wants to become the maintainer of this project, let me know. Unfortunately between work and everything else I don't have the time to maintain this. I understand there's a very real desire for this to exist and be in a more usable state, but Linux also isn't quite there yet for me to attempt active development either. You can reach out to me at ideas@alexankitty.com  
-Thanks for your understanding.
+Development of this project has more or less resumed. Help is always wanted and appreciated, however.
+
+# Contact
+You can reach me at ideas@alexankitty.com, by putting an issue on this github, by commenting on the [AUR package](https://aur.archlinux.org/packages/fancytasks), by commenting on the kde-look page, or on the [FancyTasks KDE Reddit community](https://www.reddit.com/r/fancytaskskde/).
 
 # FancyTasks
 
-![Fancy Tasks Icon](https://github.com/alexankitty/Plasma-Customizable-TaskManager/blob/main/FancyTasks.png?raw=true)
+![Fancy Tasks Icon](https://github.com/alexankitty/FancyTasks/blob/main/package/FancyTasks.png?raw=true)
 
 ## Installing
 
+If your distro does not include kirigami2, install it now. It's required for the settings, and used for the dominant icon color effect. Python3 is required for installing.
+
 1. Clone this repository with the following command `git clone https://github.com/alexankitty/FancyTasks`
-2. CD into the foloder and run the script `install.sh`, you may need to chmod +x or prepend your shell before the script in order to run it
+2. CD into the folder and run the script `install.sh`, you may need to chmod +x or prepend your shell before the script in order to run it
 3. Right click your panel, click add widgets and search for fancy tasks.
 4. Right click the new task panel and click Configure Fancy Tasks... - everything you will want to configure to enable the new features will be in there. Default features are based on the KDE's team existing vision.
 
@@ -39,14 +43,16 @@ Features improvements tweaks and options to the original task manager plasmoid m
 
 ## To Do
 * Fix LTS support
-* Allow disabling of the plasma SVG (easy)
-* Update colorize to a more clear radio button.
 * Correct Metro to have *no* spacing (the multi app running indicator doesn't have a spacing in win10 and I apparently missed this)
 * Allow customization of the space between indicators (may have dangerous implications, required for presets)
-* Allow changing of animation duration
+* Allow changing of animation duration, and possibly animating of button color and frame transitions.
 * Change styles (Metro, Ciliora, Dashes) to presets, switch preset to custom when modifying settings. Add in Dots as a preset.
 * Fix naming conventions to be more clear to users.
-* Translations.
+
+## Translation Help Wanted!
+Information regarding submitting translations is available [here](https://github.com/alexankitty/FancyTasks/blob/main/package/translate/ReadMe.md).  
+Important note: Any time an update to strings is made, the translations need to be merged and a new po template needs to be created.  
+Finally, the metadata.json is done separately.
 
 ## Pictures
 Colorful Tasks  

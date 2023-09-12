@@ -67,7 +67,7 @@
       <default>2</default>
       <min>1</min>
     </entry>
-    <entry name="maxLength" type="Int">
+    <entry name="maxButtonLength" type="Int">
       <label>The max legnth of a task button.</label>
       <default>200</default>
       <min>1</min>
@@ -112,6 +112,10 @@
       <label>Whether to indicate applications that are playing audio including an option to mute them.</label>
       <default>true</default>
     </entry>
+    <entry name="iconScale" type="Int">
+      <label>Scale of taskbar icons.</label>
+      <default>100</default>
+    </entry>
     <entry name="taskHoverEffect" type="Bool">
       <label>Whether task buttons should change in appearance when the mouse pointer is above them.</label>
       <default>true</default>
@@ -136,6 +140,18 @@
       <label>Enable taskbar indicator effect. 0 = Off, 1 = On</label>
       <default>0</default>
     </entry>
+    <entry name="indicatorProgress" type="Bool">
+      <label>Display progress on indicator instead of button</label>
+      <default>false</default>
+    </entry>
+    <entry name="indicatorProgressColor" type="String">
+      <label>Set a custom color for the task button.</label>
+      <default>#00FF00</default>
+    </entry>
+    <entry name="disableInactiveIndicators" type="Bool">
+      <label>Disables the indicator for inactive windows</label>
+      <default>false</default>
+    </entry>
     <entry name="indicatorsAnimated" type="Bool">
       <label>Enable animating indicators</label>
       <default>true</default>
@@ -154,7 +170,7 @@
     </entry>
     <entry name="indicatorMinLimit" type="Int">
       <label>Set the minimum number of running indicators to display.</label>
-      <default>1</default>
+      <default>0</default>
     </entry>
     <entry name="indicatorMaxLimit" type="Int">
       <label>Set the maximum number of running indicators to display.</label>
@@ -171,6 +187,10 @@
     <entry name="indicatorGrowFactor" type="Int">
       <label>Amount to grow the indicator by</label>
       <default>100</default>
+    </entry>
+    <entry name="indicatorEdgeOffset" type="Int">
+      <label>Sets how many pixels offset from the edge the indicator is</label>
+      <default>0</default>
     </entry>
     <entry name="indicatorSize" type="Int">
       <label>Set the size of the indicator in pixels</label>
@@ -224,8 +244,12 @@
       <label>Set a custom color for the task button.</label>
       <default>#FFFFFF</default>
     </entry>
-        <entry name="disableButtonSvg" type="Bool">
+    <entry name="disableButtonSvg" type="Bool">
       <label>Disables the decoration SVG</label>
+      <default>false</default>
+    </entry>
+    <entry name="disableButtonInactiveSvg" type="Bool">
+      <label>Disables the decoration SVG for inactive windows</label>
       <default>false</default>
     </entry>
     <entry name="overridePlasmaButtonDirection" type="Bool">
